@@ -22,93 +22,129 @@
     </div>
 </div>
 
-<div class="header">
-    <h1><i class="fas fa-table"></i> Edit Columns</h1>
-    <p>Review and edit the headers with file information and table mapping</p>
-</div>
+<div class="container-fluid px-4">
+    <div class="header mt-3 mb-3">
+        <h1><i class="fas fa-table"></i> Edit Columns</h1>
+        <p>Review and edit the headers with file information and table mapping</p>
+    </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="fas fa-edit"></i> Column Mapping</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" id="columnForm">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th style="width: 20%;">
-                                        <i class="fas fa-file"></i> File Name
-                                    </th>
-                                    <th style="width: 20%;">
-                                        <i class="fas fa-table"></i> Mapped Table
-                                    </th>
-                                    <th style="width: 30%;">
-                                        <i class="fas fa-columns"></i> Original Header
-                                    </th>
-                                    <th style="width: 30%;">
-                                        <i class="fas fa-edit"></i> Mapped column Name
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for original_header, modified_header in headers_with_random.items() %}
-                                <tr>
-                                    <td class="align-middle">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-info me-2">{{ loop.index }}</span>
-                                            <code class="text-dark">{{ file_headers_mapping.get(original_header, 'Unknown') }}</code>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <input 
-                                            type="text" 
-                                            class="form-control" 
-                                            name="table_{{ original_header }}"
-                                            value="{{ file_headers_mapping.get(original_header, 'Unknown') }}"
-                                            placeholder="Enter table name..."
-                                            data-original-table="{{ file_headers_mapping.get(original_header, 'Unknown') }}"
-                                        >
-                                    </td>
-                                    <td class="align-middle">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-secondary me-2">{{ loop.index }}</span>
-                                            <code class="text-dark">{{ original_header }}</code>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <input 
-                                            type="text" 
-                                            class="form-control" 
-                                            name="column_{{ original_header }}"
-                                            value="{{ modified_header }}"
-                                            placeholder="Enter modified header..."
-                                            data-original="{{ original_header }}"
-                                            data-original-value="{{ modified_header }}"
-                                        >
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{{ url_for('confirm_usecase') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Usecase
-                        </a>
-                        <div>
-                            <button type="button" class="btn btn-outline-warning me-2" onclick="resetChanges()">
-                                <i class="fas fa-undo"></i> Reset Changes
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-check"></i> Submit Changes
-                            </button>
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm w-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Column Mapping</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="columnForm">
+                        <div class="table-responsive" style="overflow-x: auto;">
+                            <table class="table table-hover align-middle" style="min-width: 1200px; font-size: 1.08rem;">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 140px;">
+                                            <i class="fas fa-file"></i> File Name
+                                        </th>
+                                        <th style="min-width: 140px;">
+                                            <i class="fas fa-table"></i> Mapped Table
+                                        </th>
+                                        <th style="min-width: 180px;">
+                                            <i class="fas fa-columns"></i> Original Header
+                                        </th>
+                                        <th style="min-width: 180px;">
+                                            <i class="fas fa-edit"></i> Mapped column Name
+                                        </th>
+                                        <th style="min-width: 140px;">
+                                            <i class="fas fa-database"></i> Data Type
+                                        </th>
+                                        <th style="min-width: 140px;">
+                                            <i class="fas fa-tag"></i> Default Value
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for original_header, modified_header in headers_with_random.items() %}
+                                    {% set analysis = column_analysis.get(original_header, {}) %}
+                                    <tr>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-info me-2">{{ loop.index }}</span>
+                                                <code class="text-dark">{{ file_headers_mapping.get(original_header, 'Unknown') }}</code>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input 
+                                                type="text" 
+                                                class="form-control" 
+                                                name="table_{{ original_header }}"
+                                                value="{{ file_headers_mapping.get(original_header, 'Unknown') }}"
+                                                placeholder="Enter table name..."
+                                                data-original-table="{{ file_headers_mapping.get(original_header, 'Unknown') }}"
+                                                style="min-width: 120px;"
+                                            >
+                                        </td>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-secondary me-2">{{ loop.index }}</span>
+                                                <code class="text-dark">{{ original_header }}</code>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input 
+                                                type="text" 
+                                                class="form-control" 
+                                                name="column_{{ original_header }}"
+                                                value="{{ modified_header }}"
+                                                placeholder="Enter modified header..."
+                                                data-original="{{ original_header }}"
+                                                data-original-value="{{ modified_header }}"
+                                                style="min-width: 120px;"
+                                            >
+                                        </td>
+                                        <td>
+                                            <select 
+                                                class="form-control" 
+                                                name="data_type_{{ original_header }}"
+                                                data-original-data-type="{{ analysis.get('data_type', 'string') }}"
+                                                style="min-width: 100px;"
+                                            >
+                                                <option value="string" {% if analysis.get('data_type', 'string') == 'string' %}selected{% endif %}>string</option>
+                                                <option value="integer" {% if analysis.get('data_type', 'string') == 'integer' %}selected{% endif %}>integer</option>
+                                                <option value="float" {% if analysis.get('data_type', 'string') == 'float' %}selected{% endif %}>float</option>
+                                                <option value="date" {% if analysis.get('data_type', 'string') == 'date' %}selected{% endif %}>date</option>
+                                                <option value="boolean" {% if analysis.get('data_type', 'string') == 'boolean' %}selected{% endif %}>boolean</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input 
+                                                type="text" 
+                                                class="form-control" 
+                                                name="default_value_{{ original_header }}"
+                                                value="{{ analysis.get('default_value', '') }}"
+                                                placeholder="Enter default value..."
+                                                data-original-default="{{ analysis.get('default_value', '') }}"
+                                                style="min-width: 100px;"
+                                            >
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </form>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('confirm_usecase') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Usecase
+                            </a>
+                            <div>
+                                <button type="button" class="btn btn-outline-warning me-2" onclick="resetChanges()">
+                                    <i class="fas fa-undo"></i> Reset Changes
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check"></i> Submit Changes
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -116,17 +152,20 @@
 
 <div class="row mt-4">
     <div class="col-12">
-                    <div class="alert alert-info">
-                <h6><i class="fas fa-lightbulb"></i> Instructions:</h6>
-                <ul class="mb-0">
-                    <li><strong>File Name:</strong> Shows the source file (non-editable)</li>
-                    <li><strong>Mapped Table:</strong> You can edit the table name (defaults to file name)</li>
-                    <li><strong>Modified Header:</strong> You can edit any value in Column B</li>
-                    <li>Click "Reset Changes" to revert all edits to original values</li>
-                    <li>Click "Submit Changes" to process your modifications</li>
-                    <li>Your changes will be printed to the backend console</li>
-                </ul>
-            </div>
+        <div class="alert alert-info">
+            <h6><i class="fas fa-lightbulb"></i> Instructions:</h6>
+            <ul class="mb-0">
+                <li><strong>File Name:</strong> Shows the source file (non-editable)</li>
+                <li><strong>Mapped Table:</strong> You can edit the table name (defaults to file name)</li>
+                <li><strong>Original Header:</strong> Shows the original column name (non-editable)</li>
+                <li><strong>Mapped Column Name:</strong> You can edit the column name</li>
+                <li><strong>Data Type:</strong> Automatically detected data type (can be edited)</li>
+                <li><strong>Default Value:</strong> Default value for missing data (can be edited)</li>
+                <li>Click "Reset Changes" to revert all edits to original values</li>
+                <li>Click "Submit Changes" to process your modifications</li>
+                <li>Your changes will be printed to the backend console</li>
+            </ul>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -136,6 +175,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const columnInputs = document.querySelectorAll('input[name^="column_"]');
     const tableInputs = document.querySelectorAll('input[name^="table_"]');
+    const dataTypeSelects = document.querySelectorAll('select[name^="data_type_"]');
+    const defaultValueInputs = document.querySelectorAll('input[name^="default_value_"]');
     const form = document.getElementById('columnForm');
     
     // Track changes for column inputs
@@ -172,6 +213,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Track changes for data type selects
+    let originalDataTypeValues = {};
+    dataTypeSelects.forEach(select => {
+        originalDataTypeValues[select.name] = select.value;
+        
+        // Add change indicator
+        select.addEventListener('change', function() {
+            if (this.value !== originalDataTypeValues[this.name]) {
+                this.style.borderColor = '#ffc107';
+                this.style.backgroundColor = '#fff3cd';
+            } else {
+                this.style.borderColor = '#e2e8f0';
+                this.style.backgroundColor = '#fff';
+            }
+        });
+    });
+    
+    // Track changes for default value inputs
+    let originalDefaultValues = {};
+    defaultValueInputs.forEach(input => {
+        originalDefaultValues[input.name] = input.value;
+        
+        // Add change indicator
+        input.addEventListener('input', function() {
+            if (this.value !== originalDefaultValues[this.name]) {
+                this.style.borderColor = '#ffc107';
+                this.style.backgroundColor = '#fff3cd';
+            } else {
+                this.style.borderColor = '#e2e8f0';
+                this.style.backgroundColor = '#fff';
+            }
+        });
+    });
+    
     // Form submission with validation
     form.addEventListener('submit', function(e) {
         const submitBtn = form.querySelector('button[type="submit"]');
@@ -181,6 +256,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show summary of changes
         let columnChanges = [];
         let tableChanges = [];
+        let dataTypeChanges = [];
+        let defaultValueChanges = [];
         
         columnInputs.forEach(input => {
             if (input.value !== originalColumnValues[input.name]) {
@@ -194,9 +271,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        if (columnChanges.length > 0 || tableChanges.length > 0) {
+        dataTypeSelects.forEach(select => {
+            if (select.value !== originalDataTypeValues[select.name]) {
+                dataTypeChanges.push(`Data type for ${select.dataset.originalDataType}: "${originalDataTypeValues[select.name]}" → "${select.value}"`);
+            }
+        });
+        
+        defaultValueInputs.forEach(input => {
+            if (input.value !== originalDefaultValues[input.name]) {
+                defaultValueChanges.push(`Default value for ${input.dataset.originalDefault}: "${originalDefaultValues[input.name]}" → "${input.value}"`);
+            }
+        });
+        
+        if (columnChanges.length > 0 || tableChanges.length > 0 || dataTypeChanges.length > 0 || defaultValueChanges.length > 0) {
             console.log('Column changes to be submitted:', columnChanges);
             console.log('Table name changes to be submitted:', tableChanges);
+            console.log('Data type changes to be submitted:', dataTypeChanges);
+            console.log('Default value changes to be submitted:', defaultValueChanges);
         }
     });
 });
@@ -205,6 +296,8 @@ function resetChanges() {
     if (confirm('Are you sure you want to reset all changes to their original values?')) {
         const columnInputs = document.querySelectorAll('input[name^="column_"]');
         const tableInputs = document.querySelectorAll('input[name^="table_"]');
+        const dataTypeSelects = document.querySelectorAll('select[name^="data_type_"]');
+        const defaultValueInputs = document.querySelectorAll('input[name^="default_value_"]');
         
         columnInputs.forEach(input => {
             input.value = input.dataset.originalValue;
@@ -214,6 +307,18 @@ function resetChanges() {
         
         tableInputs.forEach(input => {
             input.value = input.dataset.originalTable;
+            input.style.borderColor = '#e2e8f0';
+            input.style.backgroundColor = '#fff';
+        });
+        
+        dataTypeSelects.forEach(select => {
+            select.value = select.dataset.originalDataType;
+            select.style.borderColor = '#e2e8f0';
+            select.style.backgroundColor = '#fff';
+        });
+        
+        defaultValueInputs.forEach(input => {
+            input.value = input.dataset.originalDefault;
             input.style.borderColor = '#e2e8f0';
             input.style.backgroundColor = '#fff';
         });
