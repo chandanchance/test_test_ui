@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Columns{% endblock %}
+
+{% block content %}
+<div class="progress-indicator">
+    <div class="step completed">
+        <div class="step-number"><i class="fas fa-check"></i></div>
+        <span>Upload Files</span>
+    </div>
+    <div class="step completed">
+        <div class="step-number"><i class="fas fa-check"></i></div>
+        <span>Confirm Usecase</span>
+    </div>
+    <div class="step active">
+        <div class="step-number">3</div>
+        <span>Edit Columns</span>
+    </div>
+    <div class="step">
+        <div class="step-number">4</div>
+        <span>Success</span>
+    </div>
+</div>
+
+<div class="header">
+    <h1><i class="fas fa-table"></i> Edit Columns</h1>
+    <p>Review and edit the headers with file information and table mapping</p>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-edit"></i> Column Mapping</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="columnForm">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">
+                                        <i class="fas fa-file"></i> File Name
+                                    </th>
+                                    <th style="width: 20%;">
+                                        <i class="fas fa-table"></i> Mapped Table
+                                    </th>
+                                    <th style="width: 30%;">
+                                        <i class="fas fa-columns"></i> Original Header
+                                    </th>
+                                    <th style="width: 30%;">
+                                        <i class="fas fa-edit"></i> Mapped column Name
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for original_header, modified_header in headers_with_random.items() %}
+                                <tr>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-info me-2">{{ loop.index }}</span>
+                                            <code class="text-dark">{{ file_headers_mapping.get(original_header, 'Unknown') }}</code>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            name="table_{{ original_header }}"
+                                            value="{{ file_headers_mapping.get(original_header, 'Unknown') }}"
+                                            placeholder="Enter table name..."
+                                            data-original-table="{{ file_headers_mapping.get(original_header, 'Unknown') }}"
+                                        >
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-secondary me-2">{{ loop.index }}</span>
+                                            <code class="text-dark">{{ original_header }}</code>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            name="column_{{ original_header }}"
+                                            value="{{ modified_header }}"
+                                            placeholder="Enter modified header..."
+                                            data-original="{{ original_header }}"
+                                            data-original-value="{{ modified_header }}"
+                                        >
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('confirm_usecase') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Usecase
+                        </a>
+                        <div>
+                            <button type="button" class="btn btn-outline-warning me-2" onclick="resetChanges()">
+                                <i class="fas fa-undo"></i> Reset Changes
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Submit Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+                    <div class="alert alert-info">
+                <h6><i class="fas fa-lightbulb"></i> Instructions:</h6>
+                <ul class="mb-0">
+                    <li><strong>File Name:</strong> Shows the source file (non-editable)</li>
+                    <li><strong>Mapped Table:</strong> You can edit the table name (defaults to file name)</li>
+                    <li><strong>Modified Header:</strong> You can edit any value in Column B</li>
+                    <li>Click "Reset Changes" to revert all edits to original values</li>
+                    <li>Click "Submit Changes" to process your modifications</li>
+                    <li>Your changes will be printed to the backend console</li>
+                </ul>
+            </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const columnInputs = document.querySelectorAll('input[name^="column_"]');
+    const tableInputs = document.querySelectorAll('input[name^="table_"]');
+    const form = document.getElementById('columnForm');
+    
+    // Track changes for column inputs
+    let originalColumnValues = {};
+    columnInputs.forEach(input => {
+        originalColumnValues[input.name] = input.value;
+        
+        // Add change indicator
+        input.addEventListener('input', function() {
+            if (this.value !== originalColumnValues[this.name]) {
+                this.style.borderColor = '#ffc107';
+                this.style.backgroundColor = '#fff3cd';
+            } else {
+                this.style.borderColor = '#e2e8f0';
+                this.style.backgroundColor = '#fff';
+            }
+        });
+    });
+    
+    // Track changes for table inputs
+    let originalTableValues = {};
+    tableInputs.forEach(input => {
+        originalTableValues[input.name] = input.value;
+        
+        // Add change indicator
+        input.addEventListener('input', function() {
+            if (this.value !== originalTableValues[this.name]) {
+                this.style.borderColor = '#ffc107';
+                this.style.backgroundColor = '#fff3cd';
+            } else {
+                this.style.borderColor = '#e2e8f0';
+                this.style.backgroundColor = '#fff';
+            }
+        });
+    });
+    
+    // Form submission with validation
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+        
+        // Show summary of changes
+        let columnChanges = [];
+        let tableChanges = [];
+        
+        columnInputs.forEach(input => {
+            if (input.value !== originalColumnValues[input.name]) {
+                columnChanges.push(`${input.dataset.original}: "${originalColumnValues[input.name]}" → "${input.value}"`);
+            }
+        });
+        
+        tableInputs.forEach(input => {
+            if (input.value !== originalTableValues[input.name]) {
+                tableChanges.push(`Table for ${input.dataset.originalTable}: "${originalTableValues[input.name]}" → "${input.value}"`);
+            }
+        });
+        
+        if (columnChanges.length > 0 || tableChanges.length > 0) {
+            console.log('Column changes to be submitted:', columnChanges);
+            console.log('Table name changes to be submitted:', tableChanges);
+        }
+    });
+});
+
+function resetChanges() {
+    if (confirm('Are you sure you want to reset all changes to their original values?')) {
+        const columnInputs = document.querySelectorAll('input[name^="column_"]');
+        const tableInputs = document.querySelectorAll('input[name^="table_"]');
+        
+        columnInputs.forEach(input => {
+            input.value = input.dataset.originalValue;
+            input.style.borderColor = '#e2e8f0';
+            input.style.backgroundColor = '#fff';
+        });
+        
+        tableInputs.forEach(input => {
+            input.value = input.dataset.originalTable;
+            input.style.borderColor = '#e2e8f0';
+            input.style.backgroundColor = '#fff';
+        });
+    }
+}
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') {
+            e.preventDefault();
+            resetChanges();
+        }
+    }
+});
+</script>
+{% endblock %} 

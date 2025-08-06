@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Upload CSV Files{% endblock %}
+
+{% block content %}
+<div class="progress-indicator">
+    <div class="step active">
+        <div class="step-number">1</div>
+        <span>Upload Files</span>
+    </div>
+    <div class="step">
+        <div class="step-number">2</div>
+        <span>Confirm Usecase</span>
+    </div>
+    <div class="step">
+        <div class="step-number">3</div>
+        <span>Edit Columns</span>
+    </div>
+    <div class="step">
+        <div class="step-number">4</div>
+        <span>Success</span>
+    </div>
+</div>
+
+<div class="header">
+    <h1><i class="fas fa-upload"></i> Upload CSV Files</h1>
+    <p>Select multiple CSV files to extract and process their headers</p>
+</div>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="upload-area" id="uploadArea">
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div class="text-center mb-4">
+            <div class="upload-box p-5 border-2 border-dashed border-primary rounded-3 mb-3" 
+                 style="border-style: dashed; border-color: #667eea; background: rgba(102, 126, 234, 0.05);">
+                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                <h4>Drag & Drop CSV Files Here</h4>
+                <p class="text-muted">or click to browse files</p>
+                <input type="file" name="files" multiple accept=".csv" class="form-control" id="fileInput" style="display: none;">
+                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-folder-open"></i> Choose Files
+                </button>
+            </div>
+        </div>
+        
+        <div id="fileList" class="mb-4" style="display: none;">
+            <h5><i class="fas fa-list"></i> Selected Files:</h5>
+            <div id="fileItems" class="list-group"></div>
+        </div>
+        
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                <i class="fas fa-arrow-right"></i> Process Files
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const fileItems = document.getElementById('fileItems');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#48bb78';
+        uploadArea.style.backgroundColor = 'rgba(72, 187, 120, 0.1)';
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#667eea';
+        uploadArea.style.backgroundColor = 'rgba(102, 126, 234, 0.05)';
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#667eea';
+        uploadArea.style.backgroundColor = 'rgba(102, 126, 234, 0.05)';
+        
+        const files = e.dataTransfer.files;
+        handleFiles(files);
+    });
+
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+        const csvFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.csv'));
+        
+        if (csvFiles.length === 0) {
+            alert('Please select CSV files only.');
+            return;
+        }
+
+        fileItems.innerHTML = '';
+        csvFiles.forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+            fileItem.innerHTML = `
+                <div>
+                    <i class="fas fa-file-csv text-primary"></i>
+                    <strong>${file.name}</strong>
+                    <small class="text-muted">(${(file.size / 1024).toFixed(2)} KB)</small>
+                </div>
+                <span class="badge bg-success rounded-pill">Ready</span>
+            `;
+            fileItems.appendChild(fileItem);
+        });
+
+        fileList.style.display = 'block';
+        submitBtn.disabled = false;
+        
+        // Update the file input with the selected files
+        const dt = new DataTransfer();
+        csvFiles.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+    }
+
+    // Form submission with loading state
+    uploadForm.addEventListener('submit', function(e) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %} 

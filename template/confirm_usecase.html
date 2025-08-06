@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Usecase{% endblock %}
+
+{% block content %}
+<div class="progress-indicator">
+    <div class="step completed">
+        <div class="step-number"><i class="fas fa-check"></i></div>
+        <span>Upload Files</span>
+    </div>
+    <div class="step active">
+        <div class="step-number">2</div>
+        <span>Confirm Usecase</span>
+    </div>
+    <div class="step">
+        <div class="step-number">3</div>
+        <span>Edit Columns</span>
+    </div>
+    <div class="step">
+        <div class="step-number">4</div>
+        <span>Success</span>
+    </div>
+</div>
+
+<div class="header">
+    <h1><i class="fas fa-edit"></i> Confirm Usecase</h1>
+    <p>Review and edit the usecase with reference to standard business usecases</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-edit"></i> Edit Usecase</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="usecase_text" class="form-label">
+                            <strong>Usecase Name:</strong>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="usecase_text" 
+                            name="usecase_text" 
+                            rows="4" 
+                            placeholder="Headers will appear here..."
+                            style="font-family: 'Courier New', monospace; font-size: 14px;"
+                        >{{ headers }}</textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> 
+                            You can edit the usecase. The system will use the usecase for the next step.
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('upload_files') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Upload
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> Continue to Columns
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white py-2">
+                <h6 class="mb-0"><i class="fas fa-database"></i> Reference Business Usecases</h6>
+            </div>
+            <div class="card-body py-2">
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-hover table-sm" style="font-size: 0.875rem;">
+                        <thead class="table-light sticky-top bg-light">
+                            <tr>
+                                <th style="padding: 0.5rem; font-size: 0.8rem;"><i class="fas fa-briefcase"></i> Business Usecase</th>
+                                <th style="padding: 0.5rem; font-size: 0.8rem;"><i class="fas fa-database"></i> Database Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usecase in reference_usecases %}
+                            <tr>
+                                <td style="padding: 0.375rem 0.5rem;">
+                                    <span class="fw-medium" style="font-size: 0.8rem;">{{ usecase.business_usecase_name }}</span>
+                                </td>
+                                <td style="padding: 0.375rem 0.5rem;">
+                                    <code class="text-primary" style="font-size: 0.75rem;">{{ usecase.database_name }}</code>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                        <i class="fas fa-info-circle"></i> 
+                        Standard business usecases and database names.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6><i class="fas fa-lightbulb"></i> What happens next?</h6>
+            <ul class="mb-0">
+                <li>Review the reference business usecases table on the right for standard naming conventions</li>
+                <li>Edit the usecase name in the smaller text area on the left if needed</li>
+                <li>The system will map headers to the nearest column in the selected business usecase</li>
+                <li>You'll be able to edit the modified table name and column mapping in the next step</li>
+                <li>Your changes will be processed and saved</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('usecase_text');
+    
+    // Auto-resize textarea
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+    
+    // Set initial height
+    textarea.style.height = textarea.scrollHeight + 'px';
+    
+    // Add syntax highlighting for headers
+    textarea.addEventListener('input', function() {
+        const value = this.value;
+        const headers = value.split(',').map(h => h.trim()).filter(h => h);
+        
+        // You could add more sophisticated highlighting here
+        console.log('Headers detected:', headers);
+    });
+});
+</script>
+{% endblock %} 

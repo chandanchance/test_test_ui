@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Processing Complete{% endblock %}
+
+{% block content %}
+<div class="progress-indicator">
+    <div class="step completed">
+        <div class="step-number"><i class="fas fa-check"></i></div>
+        <span>Upload Files</span>
+    </div>
+    <div class="step completed">
+        <div class="step-number"><i class="fas fa-check"></i></div>
+        <span>Confirm Usecase</span>
+    </div>
+    <div class="step completed">
+        <div class="step-number"><i class="fas fa-check"></i></div>
+        <span>Edit Columns</span>
+    </div>
+    <div class="step active">
+        <div class="step-number">4</div>
+        <span>Success</span>
+    </div>
+</div>
+
+<div class="header">
+    <h1><i class="fas fa-check-circle text-success"></i> Processing Complete!</h1>
+    <p>Your changes have been successfully processed and saved</p>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check"></i> Success Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                            <h4 class="text-success">All Changes Processed!</h4>
+                            <p class="text-muted">Your column modifications have been successfully saved to the backend.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle"></i> What was processed:</h6>
+                            <ul class="mb-0">
+                                <li>CSV file headers were extracted</li>
+                                <li>Random numbers were added to headers</li>
+                                <li>Your column edits were captured</li>
+                                <li>Changes were printed to backend console</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('upload_files') }}" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Process New Files
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary" onclick="showConsoleInfo()">
+                            <i class="fas fa-terminal"></i> View Console Output
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="fas fa-cogs"></i> Backend Processing Details</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-file-csv fa-2x text-primary mb-2"></i>
+                            <h6>File Upload</h6>
+                            <small class="text-muted">CSV files processed</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-edit fa-2x text-warning mb-2"></i>
+                            <h6>Header Extraction</h6>
+                            <small class="text-muted">Headers extracted and modified</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-save fa-2x text-success mb-2"></i>
+                            <h6>Changes Saved</h6>
+                            <small class="text-muted">User modifications processed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Console Info Modal -->
+<div class="modal fade" id="consoleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-terminal"></i> Backend Console Output</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle"></i> Console Output Location:</h6>
+                    <p class="mb-0">The backend console output has been printed to the terminal where you ran the Flask application. Look for output similar to:</p>
+                </div>
+                <pre class="bg-dark text-light p-3 rounded" style="font-size: 12px;">
+=== USER CHANGES ===
+Column 'header_name': 'original_value' -> 'new_value'
+Column 'another_header': 'original_value' -> 'new_value'
+===================</pre>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Note:</strong> If you're running this in an IDE or different environment, check your console/terminal output for the detailed changes.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showConsoleInfo() {
+    const modal = new bootstrap.Modal(document.getElementById('consoleModal'));
+    modal.show();
+}
+
+// Add some animation to the success page
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate the success icon
+    const successIcon = document.querySelector('.fa-check-circle');
+    successIcon.style.animation = 'bounce 1s ease-in-out';
+    
+    // Add bounce animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Auto-scroll to top
+    window.scrollTo(0, 0);
+});
+</script>
+{% endblock %} 
