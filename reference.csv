@@ -1,0 +1,16 @@
+business_usecase_name,database_name
+Customer Management,customer_mgmt
+Product Catalog,product_catalog
+Order Processing,order_processing
+Inventory Management,inventory_mgmt
+User Authentication,user_auth
+Payment Processing,payment_proc
+Analytics Dashboard,analytics_dash
+Reporting System,reporting_sys
+Email Marketing,email_marketing
+Sales Pipeline,sales_pipeline
+Customer Support,support_tickets
+Billing System,billing_sys
+Data Warehouse,data_warehouse
+API Gateway,api_gateway
+Notification Service,notification_svc 
