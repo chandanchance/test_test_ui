@@ -5,6 +5,7 @@ import random
 import string
 from werkzeug.utils import secure_filename
 from io import StringIO
+import re
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
@@ -24,6 +25,94 @@ def allowed_file(filename):
 def generate_random_suffix():
     """Generate a random 3-digit number suffix"""
     return str(random.randint(100, 999))
+
+def detect_data_type(values):
+    """Detect the data type of a column based on its values"""
+    if not values:
+        return "string"
+    
+    # Remove empty values
+    non_empty_values = [v.strip() for v in values if v and v.strip()]
+    if not non_empty_values:
+        return "string"
+    
+    # Check if all values are integers
+    try:
+        all_int = all(int(v) for v in non_empty_values)
+        if all_int:
+            return "integer"
+    except ValueError:
+        pass
+    
+    # Check if all values are floats
+    try:
+        all_float = all(float(v) for v in non_empty_values)
+        if all_float:
+            return "float"
+    except ValueError:
+        pass
+    
+    # Check if all values are dates (basic check)
+    date_pattern = r'^\d{4}-\d{2}-\d{2}$|^\d{2}/\d{2}/\d{4}$|^\d{2}-\d{2}-\d{4}$'
+    try:
+        all_date = all(re.match(date_pattern, v) for v in non_empty_values)
+        if all_date:
+            return "date"
+    except:
+        pass
+    
+    # Check if all values are booleans
+    boolean_values = {'true', 'false', 'yes', 'no', '1', '0', 't', 'f', 'y', 'n'}
+    try:
+        all_bool = all(v.lower() in boolean_values for v in non_empty_values)
+        if all_bool:
+            return "boolean"
+    except:
+        pass
+    
+    # Default to string
+    return "string"
+
+def get_default_value(data_type):
+    """Get default value based on data type"""
+    defaults = {
+        "string": "",
+        "integer": "0",
+        "float": "0.0",
+        "date": "",
+        "boolean": "false"
+    }
+    return defaults.get(data_type, "")
+
+def analyze_csv_column(file_path, column_name):
+    """Analyze a specific column in a CSV file to determine data type and default value"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            csv_reader = csv.DictReader(file)
+            column_values = []
+            
+            for row in csv_reader:
+                if column_name in row:
+                    column_values.append(row[column_name])
+            
+            # Detect data type
+            data_type = detect_data_type(column_values)
+            
+            # Get default value
+            default_value = get_default_value(data_type)
+            
+            return {
+                'data_type': data_type,
+                'default_value': default_value,
+                'sample_values': column_values[:3] if column_values else []
+            }
+    except Exception as e:
+        print(f"Error analyzing column {column_name} in {file_path}: {str(e)}")
+        return {
+            'data_type': "string",
+            'default_value': "",
+            'sample_values': []
+        }
 
 def extract_headers_from_csv(file_path):
     """Extract headers from CSV file using built-in csv module"""
@@ -71,6 +160,7 @@ def upload_files():
         # Process uploaded files and extract headers
         all_headers = []
         file_headers_mapping = {}  # Track which headers come from which file
+        file_paths = {}  # Track file paths for analysis
         
         for file in files:
             if file and allowed_file(file.filename):
@@ -83,6 +173,7 @@ def upload_files():
                     for header in headers:
                         if header not in file_headers_mapping:
                             file_headers_mapping[header] = filename
+                            file_paths[header] = filepath
                     all_headers.extend(headers)
                 except Exception as e:
                     flash(f'Error reading {filename}: {str(e)}')
@@ -92,6 +183,7 @@ def upload_files():
             unique_headers = list(dict.fromkeys(all_headers))
             session['headers'] = unique_headers
             session['file_headers_mapping'] = file_headers_mapping
+            session['file_paths'] = file_paths
             session['concatenated_headers'] = "Business usecase that is detected"#', '.join(unique_headers)
             return redirect(url_for('confirm_usecase'))
         else:
@@ -127,32 +219,54 @@ def confirm_columns():
         headers = session.get('headers', [])
         edited_columns = {}
         table_names = {}
+        data_types = {}
+        default_values = {}
         
         for header in headers:
             edited_value = request.form.get(f'column_{header}', '')
             table_name = request.form.get(f'table_{header}', '')
+            data_type = request.form.get(f'data_type_{header}', '')
+            default_value = request.form.get(f'default_value_{header}', '')
+            
             if edited_value:
                 edited_columns[header] = edited_value
             if table_name:
                 table_names[header] = table_name
+            if data_type:
+                data_types[header] = data_type
+            if default_value:
+                default_values[header] = default_value
         
         session['edited_columns'] = edited_columns
         session['table_names'] = table_names
+        session['data_types'] = data_types
+        session['default_values'] = default_values
         return redirect(url_for('process_confirmation'))
     
     # Generate headers with random numbers for display
     headers = session.get('headers', [])
     file_headers_mapping = session.get('file_headers_mapping', {})
+    file_paths = session.get('file_paths', {})
     headers_with_random = {}
+    column_analysis = {}
+    
     for header in headers:
         random_suffix = generate_random_suffix()
         headers_with_random[header] = f"{header}_{random_suffix}"
+        
+        # Analyze column data type and default value
+        file_path = file_paths.get(header)
+        if file_path:
+            analysis = analyze_csv_column(file_path, header)
+            column_analysis[header] = analysis
     
     session['headers_with_random'] = headers_with_random
+    session['column_analysis'] = column_analysis
     
     return render_template('confirm_columns.html', 
                          headers_with_random=headers_with_random,
-                         file_headers_mapping=file_headers_mapping)
+                         file_headers_mapping=file_headers_mapping,
+                         column_analysis=column_analysis)
 
 @app.route('/process_confirmation')
 def process_confirmation():
@@ -161,9 +275,12 @@ def process_confirmation():
     
     edited_columns = session.get('edited_columns', {})
     table_names = session.get('table_names', {})
+    data_types = session.get('data_types', {})
+    default_values = session.get('default_values', {})
     original_headers = session.get('headers', [])
     headers_with_random = session.get('headers_with_random', {})
     file_headers_mapping = session.get('file_headers_mapping', {})
+    column_analysis = session.get('column_analysis', {})
     
     # Print changes to console (backend processing)
     print("=== USER CHANGES ===")
@@ -171,9 +288,13 @@ def process_confirmation():
         original_value = headers_with_random.get(header, header)
         edited_value = edited_columns.get(header, original_value)
         table_name = table_names.get(header, file_headers_mapping.get(header, 'Unknown'))
+        data_type = data_types.get(header, column_analysis.get(header, {}).get('data_type', 'string'))
+        default_value = default_values.get(header, column_analysis.get(header, {}).get('default_value', ''))
         
         print(f"Column '{header}' from file '{file_headers_mapping.get(header, 'Unknown')}':")
         print(f"  - Table Name: '{table_name}'")
+        print(f"  - Data Type: '{data_type}'")
+        print(f"  - Default Value: '{default_value}'")
         if edited_value != original_value:
             print(f"  - Modified Header: '{original_value}' -> '{edited_value}'")
         else:
